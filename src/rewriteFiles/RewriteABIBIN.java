@@ -37,7 +37,7 @@ public class RewriteABIBIN {
             while((line = bufReader.readLine()) != null){
                 String binline = bufReader.readLine();
                 if(binline.startsWith("6080")){
-                    binline =line; //bin
+                    bin =line; //bin
                     name = line.substring(line.indexOf(":"), line.length()-8);
                     break;
                 }
@@ -46,6 +46,9 @@ public class RewriteABIBIN {
             //파일에 쓰기
 
             bufReader.close();
+            FileWriter fw = new FileWriter(file);
+            fw.write(bin);
+            fw.close();
             return name;
         }catch (FileNotFoundException e) {
             System.out.println(e);
@@ -72,7 +75,9 @@ public class RewriteABIBIN {
                 }
             }
             //파일에 쓰기
-
+            FileWriter fw = new FileWriter(file);
+            fw.write(abi);
+            fw.close();
             //.readLine()은 끝에 개행문자를 읽지 않는다.
             bufReader.close();
         }catch (FileNotFoundException e) {
