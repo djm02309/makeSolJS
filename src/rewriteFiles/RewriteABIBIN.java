@@ -20,8 +20,13 @@ public class RewriteABIBIN {
 
                 int j = 0;
                 for (File solFile : binList) {
-                    String contractName = re.rewriteBin(solFile);
-                    re.rewriteAbi(contractName, abiList[j]);
+                    String contractName="";
+                    if(solFile.length()!=0) {  //파일 크기가 0이 아니면
+                        contractName = re.rewriteBin(solFile);
+                    }
+                    if(abiList[j].length()!=0) { //파일 크기가 0이 아니면
+                        re.rewriteAbi(contractName, abiList[j]);
+                    }
                 }
             }
         }catch(IOException e){
@@ -33,12 +38,14 @@ public class RewriteABIBIN {
             FileReader filereader = new FileReader(file);
             BufferedReader bufReader = new BufferedReader(filereader);
             String line = "";
-            String bin = "", name="";
+            String bin = "", name="",result="";
             while((line = bufReader.readLine()) != null){
-                String binline = bufReader.readLine();
-                if(binline.startsWith("6080")){
-                    bin =line; //bin
+                if(line.contains("home")){
                     name = line.substring(line.indexOf(":"), line.length()-8);
+                }
+                if(line.startsWith("6080")){
+                    bin =line; //bin
+                    result = name;
                     break;
                 }
             }
@@ -49,7 +56,7 @@ public class RewriteABIBIN {
             FileWriter fw = new FileWriter(file);
             fw.write(bin);
             fw.close();
-            return name;
+            return result;
         }catch (FileNotFoundException e) {
             System.out.println(e);
         }catch(IOException e){
