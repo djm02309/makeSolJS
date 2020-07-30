@@ -1,7 +1,6 @@
 package rewriteFiles;
 
 import java.io.*;
-import java.util.ArrayList;
 
 public class RewriteABIBIN {
     public static void main(String[] args){
@@ -10,7 +9,7 @@ public class RewriteABIBIN {
         File[] fileList = dir.listFiles();  //pages디렉토리들
 
         try{
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 1; i++) {  //1개만 테스트 해보는 용도. 아래 줄이 진짜
 //            for (int i = 0; i < fileList.length; i++) {
                 File file = fileList[i]; //page 디렉토리 하나
 
@@ -43,7 +42,7 @@ public class RewriteABIBIN {
                 if(line.contains("home")){
                     name = line.substring(line.indexOf(":"), line.length()-8);
                 }
-                if(line.startsWith("6080")){
+                if(line.startsWith("6080")){  //safeMath 아닐때? safeMath가 6080
                     bin =line; //bin
                     result = name;
                     break;
@@ -53,7 +52,7 @@ public class RewriteABIBIN {
             //파일에 쓰기
 
             bufReader.close();
-            FileWriter fw = new FileWriter(file);
+            FileWriter fw = new FileWriter(file);  //주소바꾸기
             fw.write(bin);
             fw.close();
             return result;
@@ -82,7 +81,7 @@ public class RewriteABIBIN {
                 }
             }
             //파일에 쓰기
-            FileWriter fw = new FileWriter(file);
+            FileWriter fw = new FileWriter(file);  //주소바꾸기
             fw.write(abi);
             fw.close();
             //.readLine()은 끝에 개행문자를 읽지 않는다.
