@@ -118,21 +118,16 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
     @Override
     public String visitContractDefinition(SolidityParser.ContractDefinitionContext ctx) {
         if(ctx.getChild(0).getText().equals("contract")){  //이거 일때만 하게
-
+            array.add(visit(ctx.identifier())); //contract 이름
         }
         if (!ctx.getChild(2).toString().equals("is")) {
-            array.add(visit(ctx.identifier())); //contract 이름
             return ctx.getChild(0).getText() + " " + visit(ctx.identifier()) + "{\n" +
                     ctx.contractPart().stream()
                             .map(t -> visit(t) + "\n")
                             .skip(1)
                             .reduce(visit(ctx.contractPart(0)), (acc, contractPart) -> acc + contractPart) + "}";
         } else {  //is 가 있으면
-            array.add(visit(ctx.identifier()));
-            String is=  ctx.inheritanceSpecifier().stream()
-                    .map(t -> ", " + visit(t))
-                    .skip(1)
-                    .reduce(visit(ctx.inheritanceSpecifier(0)), (acc, inheritanceSpecifier) -> acc + inheritanceSpecifier);
+            String is=  ctx.inheritanceSpecifier().stream().map(t -> ", " + visit(t)).skip(1).reduce(visit(ctx.inheritanceSpecifier(0)), (acc, inheritanceSpecifier) -> acc + inheritanceSpecifier);
             StringTokenizer st = new StringTokenizer(is,",");
             while (st.hasMoreTokens()){
                 for(int i =0 ; i < array.size(); i ++){
@@ -886,5 +881,8 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
         else {
             return ctx.Identifier().getText();
         }
+    }
+    public ArrayList findInheritance(){
+        return array;
     }
 }
