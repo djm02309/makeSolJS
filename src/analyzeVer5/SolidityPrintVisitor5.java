@@ -346,12 +346,24 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
 
     @Override
     public String visitFunctionTypeParameterList(SolidityParser.FunctionTypeParameterListContext ctx) {
-        en(ctx);
+        if (ctx.getChildCount() == 2) {
+            return "()";
+        } else {
+            return "( " + ctx.functionTypeParameter().stream()
+                    .map(t -> "," + visit(t))
+                    .skip(1)
+                    .reduce(visit(ctx.functionTypeParameter(0)), (acc, functionTypeParameter) -> acc + functionTypeParameter) + " )";
+        }
     }
 
     @Override
     public String visitFunctionTypeParameter(SolidityParser.FunctionTypeParameterContext ctx) {
-        ;
+        if(ctx.getChildCount() ==2 ){ //typeName storageLocation?
+            return visit(ctx.typeName())+ visit(ctx.storageLocation());
+        }
+        else{
+            return visit(ctx.typeName());
+        }
     }
 
     @Override
@@ -456,13 +468,14 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
 
     @Override
     public String visitForStatement(SolidityParser.ForStatementContext ctx) {
+        /////새로작성하기
         if (ctx.getChildCount() == 6) {    //expression이 둘다 없을때
             return "for (" + visit(ctx.getChild(2)) + "; )" + visit(ctx.statement());
         } else if (ctx.getChildCount() == 7) {  //expression이 둘중 하나만 있을때
             if (ctx.getChild(4).toString().equals(";")) {
-                return "for (" + visit(ctx.getChild(2)) + "; " + visit(ctx.expression(0)) + " ) " + visit(ctx.statement());
+                return "for (" + visit(ctx.getChild(2)) + "; " + visit(ctx.simpleStatement()) + " ) " + visit(ctx.statement());
             } else {
-                return "for (" + visit(ctx.getChild(2)) + visit(ctx.expression(0)) + "; " + ") " + visit(ctx.statement());
+                return "for (" + visit(ctx.getChild(2)) + visit(ctx.simpleStatement(0)) + "; " + ") " + visit(ctx.statement());
             }
 
         } else {    //expression이 둘다 있을때
@@ -510,17 +523,7 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
 
     @Override
     public String visitEmitStatement(SolidityParser.EmitStatementContext ctx) {
-        String firstChild = null;
-        if (ctx.getChild(0).toString().equals("var")) {
-            firstChild = "var " + visit(ctx.identifierList());
-        } else {
-            firstChild = visit(ctx.variableDeclaration());
-        }
-        if (ctx.getChildCount() > 3) {
-            return firstChild + " = " + visit(ctx.expression()) + ";";
-        } else {
-            return firstChild + ";";
-        }
+       return "emit " + visit(ctx.functionCall()) +";";
     }
 
     @Override
