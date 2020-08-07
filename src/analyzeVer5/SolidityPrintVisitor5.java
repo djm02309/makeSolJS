@@ -469,19 +469,29 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
     @Override
     public String visitForStatement(SolidityParser.ForStatementContext ctx) {
         /////새로작성하기
-        if (ctx.getChildCount() == 6) {    //expression이 둘다 없을때
-            return "for (" + visit(ctx.getChild(2)) + "; )" + visit(ctx.statement());
-        } else if (ctx.getChildCount() == 7) {  //expression이 둘중 하나만 있을때
-            if (ctx.getChild(4).toString().equals(";")) {
-                return "for (" + visit(ctx.getChild(2)) + "; " + visit(ctx.simpleStatement()) + " ) " + visit(ctx.statement());
-            } else {
-                return "for (" + visit(ctx.getChild(2)) + visit(ctx.simpleStatement(0)) + "; " + ") " + visit(ctx.statement());
+        // 'for' '(' ( simpleStatement | ';' ) ( expressionStatement | ';' ) expression? ')' statement ;
+        String result = "for (";
+        if(ctx.expression() == null) {
+            if (ctx.getChild(2) instanceof SolidityParser.SimpleStatementContext) { //simpleStatement + expressionStatement
+                if (ctx.getChild(3) instanceof SolidityParser.ExpressionStatementContext) { //simpleStatement + expressionStatement
+                    result += (visit(ctx.simpleStatement()) + visit(ctx.expressionStatement()));
+                } else { //simpleStatement + ;
+                    result += (visit(ctx.simpleStatement()) + ";");
+                }
             }
-
-        } else {    //expression이 둘다 있을때
-            return "for (" + visit(ctx.getChild(2)) + visit(ctx.expression(0)) + "; " + visit(ctx.expression(1)) + ")" + visit(ctx.statement());
+            if (ctx.getChild(2).equals(";")) {
+                if (ctx.getChild(3) instanceof SolidityParser.ExpressionStatementContext) { //; + expressionStatement
+                    result += ("; " + visit(ctx.expressionStatement()));
+                } else { //;+;일때
+                    result += ("; " + ";");
+                }
+            }
         }
-    }
+        else{
+
+        }
+
+    } //expression이 있을때
 
     @Override
     public String visitInlineAssemblyStatement(SolidityParser.InlineAssemblyStatementContext ctx) {
