@@ -403,11 +403,11 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
 
     @Override
     public String visitFunctionTypeName(SolidityParser.FunctionTypeNameContext ctx) {
-        String result = "function " + visit(ctx.typeNameList(0));
+        String result = "function " + visit(ctx.functionTypeParameterList(0));
 
         for (int i = 0; i < ctx.getChildCount(); i++) {
             if (ctx.getChild(i).toString().contains("returns")) {
-                result += visit(ctx.typeNameList(1));
+                result += visit(ctx.functionTypeParameterList(1));
                 return result;
             } else {
                 if (ctx.getChild(i) instanceof TerminalNode) {
@@ -528,10 +528,36 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
 
     @Override
     public String visitVariableDeclarationStatement(SolidityParser.VariableDeclarationStatementContext ctx) {
+        //( 'var' identifierList | variableDeclaration | '(' variableDeclarationList ')' ) ( '=' expression )? ';';
+        if(ctx.getChild(1).equals("(")){  //variableDeclarationList가 있는것
+            if(ctx.getChildCount() > 5){
+                return "var ( "+visit(ctx.variableDeclarationList())+" ) = "+visit(ctx.expression())+";";
+            }
+            else{
+                return "var ( "+visit(ctx.variableDeclarationList())+" ) ;";
+            }
+        }
+        else{
+            if(ctx.getChildCount() > 4 ){ //( 'var' identifierList | variableDeclaration) '=' expression ';';
+                return "var " +visit(ctx.getChild(1)) +" = "+visit(ctx.expression())+ ";";
+            }
+            else { //( 'var' identifierList | variableDeclaration) ;
+                return "var " + visit(ctx.getChild(1)) + ";";
+            }
+        }
     }
 
     @Override
     public String visitVariableDeclarationList(SolidityParser.VariableDeclarationListContext ctx) {
+         // variableDeclaration? (',' variableDeclaration? )* ;
+        if (ctx.getChildCount() == 0 ) { //아무것도 없을때
+            return "";
+        } else { //
+            return  ctx.variableDeclaration().stream()
+                    .map(t -> "," + visit(t))
+                    .skip(1)
+                    .reduce(visit(ctx.variableDeclaration(0)), (acc, variableDeclaration) -> acc + variableDeclaration) ;
+        }
     }
 
     @Override
@@ -563,7 +589,7 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
                 return visit(ctx.expression(0)) + " " + ctx.getChild(1).getText() + " " + visit(ctx.expression(1));
             }
         } else if (ctx.expression().size() == 1) {
-            if (ctx.getChild(0).equals(ctx.fallbackExpression()) || ctx.getChild(0).equals(ctx.forInitExpreesion())) {
+            if (ctx.getChild(0).equals(ctx.fallbackExpression()) || ctx.getChild(0).equals(ctx.forInitExpression())) {
                 return ctx.getChild(0).getText();
             } else if (ctx.getChild(0) instanceof analyzeVer4.SolidityParser.ExpressionContext) { //expression ++|-- expression (fucn)
                 if (ctx.getChild(1).toString().equals("(")) { //expression( functionCallArguments)
@@ -818,7 +844,7 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
 
     @Override
     public String visitTypeNameExpression(SolidityParser.TypeNameExpressionContext ctx) {
-        ;
+        return visitChildren(ctx);
     }
 
     @Override

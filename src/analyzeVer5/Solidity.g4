@@ -250,7 +250,12 @@ expression
   | expression '||' expression
   | expression '?' expression ':' expression
   | expression ('=' | '|=' | '^=' | '&=' | '<<=' | '>>=' | '+=' | '-=' | '*=' | '/=' | '%=') expression
-  | primaryExpression ;
+  | primaryExpression
+  | fallbackExpression
+  | forInitExpression;
+
+fallbackExpression : 'NonFallBackON'|'NonFallBackOFF';
+forInitExpression : 'Forinit';
 
 primaryExpression
   : BooleanLiteral

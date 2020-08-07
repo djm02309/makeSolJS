@@ -353,6 +353,18 @@ public interface SolidityVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExpression(SolidityParser.ExpressionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SolidityParser#fallbackExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFallbackExpression(SolidityParser.FallbackExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SolidityParser#forInitExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitForInitExpression(SolidityParser.ForInitExpressionContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link SolidityParser#primaryExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
