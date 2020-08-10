@@ -471,7 +471,7 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
         /////새로작성하기
         // 'for' '(' ( simpleStatement | ';' ) ( expressionStatement | ';' ) expression? ')' statement ;
         String result = "for (";
-        if(ctx.expression() == null) {
+        if(ctx.expression() == null) {  //expression없을때
             if (ctx.getChild(2) instanceof SolidityParser.SimpleStatementContext) { //simpleStatement + expressionStatement
                 if (ctx.getChild(3) instanceof SolidityParser.ExpressionStatementContext) { //simpleStatement + expressionStatement
                     result += (visit(ctx.simpleStatement()) + visit(ctx.expressionStatement()));
@@ -479,19 +479,35 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
                     result += (visit(ctx.simpleStatement()) + ";");
                 }
             }
-            if (ctx.getChild(2).equals(";")) {
+            else if (ctx.getChild(2).equals(";")) {
                 if (ctx.getChild(3) instanceof SolidityParser.ExpressionStatementContext) { //; + expressionStatement
                     result += ("; " + visit(ctx.expressionStatement()));
                 } else { //;+;일때
                     result += ("; " + ";");
                 }
             }
+            result += ")" + visit(ctx.statement());
+            return result;
         }
-        else{
-
+        else{ //expression 있을때
+            if (ctx.getChild(2) instanceof SolidityParser.SimpleStatementContext) { //simpleStatement + expressionStatement
+                if (ctx.getChild(3) instanceof SolidityParser.ExpressionStatementContext) { //simpleStatement + expressionStatement
+                    result += (visit(ctx.simpleStatement()) + visit(ctx.expressionStatement()));
+                } else { //simpleStatement + ;
+                    result += (visit(ctx.simpleStatement()) + ";");
+                }
+            }
+            else if (ctx.getChild(2).equals(";")) {
+                if (ctx.getChild(3) instanceof SolidityParser.ExpressionStatementContext) { //; + expressionStatement
+                    result += ("; " + visit(ctx.expressionStatement()));
+                } else { //;+;일때
+                    result += ("; " + ";");
+                }
+            }
+            result += visit(ctx.expression())+ ")" +visit(ctx.statement());
+            return result;
         }
-
-    } //expression이 있을때
+    }
 
     @Override
     public String visitInlineAssemblyStatement(SolidityParser.InlineAssemblyStatementContext ctx) {
