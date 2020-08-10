@@ -15,7 +15,7 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
             if (ctx.getChild(i).equals(ctx.EOF())) {
                 break;
             }
-            if (ctx.getChild(i) instanceof analyzeVer4.SolidityParser.ContractDefinitionContext) {
+            if (ctx.getChild(i) instanceof SolidityParser.ContractDefinitionContext) {
             }
         }
         for (int i = 0; i < ctx.children.size(); i++) {
@@ -617,7 +617,7 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
         } else if (ctx.expression().size() == 1) {
             if (ctx.getChild(0).equals(ctx.fallbackExpression()) || ctx.getChild(0).equals(ctx.forInitExpression())) {
                 return ctx.getChild(0).getText();
-            } else if (ctx.getChild(0) instanceof analyzeVer4.SolidityParser.ExpressionContext) { //expression ++|-- expression (fucn)
+            } else if (ctx.getChild(0) instanceof SolidityParser.ExpressionContext) { //expression ++|-- expression (fucn)
                 if (ctx.getChild(1).toString().equals("(")) { //expression( functionCallArguments)
                     String result = "";
                     result = visit(ctx.functionCallArguments());
@@ -637,7 +637,7 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
         } else {  //삼항연산자 또는 new 또는 primaryExpression
             if (ctx.expression().size() == 3) {
                 return visit(ctx.expression(0)) + " ? " + visit(ctx.expression(1)) + " : " + visit(ctx.expression(2));
-            } else if (ctx.getChild(0) instanceof analyzeVer4.SolidityParser.PrimaryExpressionContext) {
+            } else if (ctx.getChild(0) instanceof SolidityParser.PrimaryExpressionContext) {
                 return visit(ctx.primaryExpression());
             } else { //new typename
                 return "new " + visit(ctx.typeName());
@@ -730,7 +730,7 @@ public class SolidityPrintVisitor5 extends SolidityBaseVisitor<String>{
     public String visitAssemblyCall(SolidityParser.AssemblyCallContext ctx) {
         String firstChild = "";
         if (ctx.getChildCount() == 1) {
-            if (ctx.getChild(0) instanceof analyzeVer4.SolidityParser.IdentifierContext) {
+            if (ctx.getChild(0) instanceof SolidityParser.IdentifierContext) {
                 firstChild = visit(ctx.identifier());
             } else {
                 firstChild = ctx.getChild(0).getText();

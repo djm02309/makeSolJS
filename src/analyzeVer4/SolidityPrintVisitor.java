@@ -11,16 +11,16 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
     @Override
     public String visitSourceUnit(SolidityParser.SourceUnitContext ctx) {
         String forCheck = "";
-        for(int i = 0; i < ctx.children.size(); i++) {
-            if(ctx.getChild(i).equals(ctx.EOF())) {
+        for (int i = 0; i < ctx.children.size(); i++) {
+            if (ctx.getChild(i).equals(ctx.EOF())) {
                 break;
             }
-            if(ctx.getChild(i) instanceof SolidityParser.ContractDefinitionContext) {
+            if (ctx.getChild(i) instanceof SolidityParser.ContractDefinitionContext) {
                 forCheck += visit(ctx.getChild(i));
             }
         }
-        for(int i = 0; i < ctx.children.size(); i++) {
-            if(ctx.getChild(i).equals(ctx.EOF())) {
+        for (int i = 0; i < ctx.children.size(); i++) {
+            if (ctx.getChild(i).equals(ctx.EOF())) {
                 break;
             }
             System.out.println(visit(ctx.getChild(i)));
@@ -34,7 +34,7 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
         pragmaName = visit(ctx.pragmaName());
         pragmaValue = ctx.getChild(2).getText();
 
-        return pragma +" " + pragmaName +" "+ pragmaValue +";";
+        return pragma + " " + pragmaName + " " + pragmaValue + ";";
     }
 
     @Override
@@ -49,7 +49,7 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitVersion(SolidityParser.VersionContext ctx) {
-        for(int i = 0; i < ctx.getChildCount(); i++) {
+        for (int i = 0; i < ctx.getChildCount(); i++) {
             visit(ctx.getChild(i));
         }
         return "";
@@ -63,26 +63,24 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
     @Override
     public String visitVersionConstraint(SolidityParser.VersionConstraintContext ctx) {
         String versionOperator, versionLiteral;
-        if(ctx.versionOperator().isEmpty()) {
+        if (ctx.versionOperator().isEmpty()) {
             versionLiteral = ctx.VersionLiteral().getText();
             return versionLiteral;
-        }
-        else {
+        } else {
             versionOperator = visit(ctx.versionOperator());
             versionLiteral = ctx.VersionLiteral().getText();
-            return versionOperator+ versionLiteral;
+            return versionOperator + versionLiteral;
         }
     }
 
     @Override
     public String visitImportDeclaration(SolidityParser.ImportDeclarationContext ctx) {
-        if(ctx.getChildCount() == 1) {
+        if (ctx.getChildCount() == 1) {
             return visit(ctx.identifier(0));
-        }
-        else {
+        } else {
             String identify1 = visit(ctx.identifier(0));
             String identify2 = visit(ctx.identifier(1));
-            return identify1 + " as " +identify2;
+            return identify1 + " as " + identify2;
         }
     }
 
@@ -90,34 +88,30 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
     public String visitImportDirective(SolidityParser.ImportDirectiveContext ctx) {
         String importwd = "import ";
 
-        if(ctx.getChild(0).equals(ctx.StringLiteral())) {
-            if(ctx.identifier().isEmpty()) {
-                return importwd+" " +ctx.StringLiteral().getText()+";";
+        if (ctx.getChild(0).equals(ctx.StringLiteral())) {
+            if (ctx.identifier().isEmpty()) {
+                return importwd + " " + ctx.StringLiteral().getText() + ";";
+            } else {
+                return importwd + ctx.StringLiteral().getText() + " as " + visit(ctx.identifier(0)) + ";";
             }
-            else {
-                return importwd+ctx.StringLiteral().getText()+" as "+ visit(ctx.identifier(0))+";";
-            }
-        }
-        else if(ctx.getChild(1).toString().equals("{")) {
-            return importwd+"{ "+ctx.importDeclaration().stream()
-                    .map(t ->  ", " + visit(t) )
+        } else if (ctx.getChild(1).toString().equals("{")) {
+            return importwd + "{ " + ctx.importDeclaration().stream()
+                    .map(t -> ", " + visit(t))
                     .skip(1)
-                    .reduce(visit(ctx.importDeclaration(0)), (acc, importDeclaration) -> acc + importDeclaration)+"}"+" from "+ctx.StringLiteral().getText()+";";
-        }
-        else {  //import * | identifier
+                    .reduce(visit(ctx.importDeclaration(0)), (acc, importDeclaration) -> acc + importDeclaration) + "}" + " from " + ctx.StringLiteral().getText() + ";";
+        } else {  //import * | identifier
             String child1 = ctx.getChild(1).getText();
-            if(ctx.identifier(1) == null) {
-                return importwd+child1+" from "+ctx.StringLiteral().getText()+";";
-            }
-            else {
-                return importwd+child1+" as "+ visit(ctx.identifier(0))+" from "+ctx.StringLiteral().getText()+";";
+            if (ctx.identifier(1) == null) {
+                return importwd + child1 + " from " + ctx.StringLiteral().getText() + ";";
+            } else {
+                return importwd + child1 + " as " + visit(ctx.identifier(0)) + " from " + ctx.StringLiteral().getText() + ";";
             }
         }
     }
 
     @Override
     public String visitContractDefinition(SolidityParser.ContractDefinitionContext ctx) {
-        if(ctx.getChild(0).getText().equals("contract")){  //이거 일때만 하게
+        if (ctx.getChild(0).getText().equals("contract")) {  //이거 일때만 하게
             array.add(visit(ctx.identifier())); //contract 이름
         }
         if (!ctx.getChild(2).toString().equals("is")) {
@@ -127,12 +121,13 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
                             .skip(1)
                             .reduce(visit(ctx.contractPart(0)), (acc, contractPart) -> acc + contractPart) + "}";
         } else {  //is 가 있으면
-            String is=  ctx.inheritanceSpecifier().stream().map(t -> ", " + visit(t)).skip(1).reduce(visit(ctx.inheritanceSpecifier(0)), (acc, inheritanceSpecifier) -> acc + inheritanceSpecifier);
-            StringTokenizer st = new StringTokenizer(is,",");
-            while (st.hasMoreTokens()){
-                for(int i =0 ; i < array.size(); i ++){
-                    if(st.nextToken().equals(array.get(i))){
+            String is = ctx.inheritanceSpecifier().stream().map(t -> ", " + visit(t)).skip(1).reduce(visit(ctx.inheritanceSpecifier(0)), (acc, inheritanceSpecifier) -> acc + inheritanceSpecifier);
+            StringTokenizer st = new StringTokenizer(is, ",");
+            while (st.hasMoreTokens()) {
+                for (int i = 0; i < array.size(); i++) {
+                    if (st.nextToken().equals(array.get(i))) {
                         array.remove(i);
+                        break;
                     }
                 } //interitance랑 관련된거만 남기고 그외는 다 지우기 ? 키워드 넣어줘야함
             }
@@ -151,13 +146,12 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitInheritanceSpecifier(SolidityParser.InheritanceSpecifierContext ctx) {
-        if(ctx.getChildCount() >= 2) {
-            return visit(ctx.userDefinedTypeName()) + "( "+ctx.expression().stream()
-                    .map(t ->  ", " + visit(t) )
+        if (ctx.getChildCount() >= 2) {
+            return visit(ctx.userDefinedTypeName()) + "( " + ctx.expression().stream()
+                    .map(t -> ", " + visit(t))
                     .skip(1)
-                    .reduce(visit(ctx.expression(0)), (acc, expression) -> acc + expression)+")";
-        }
-        else {
+                    .reduce(visit(ctx.expression(0)), (acc, expression) -> acc + expression) + ")";
+        } else {
             return visit(ctx.userDefinedTypeName());
         }
     }
@@ -172,99 +166,90 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
         String typeName = visit(ctx.getChild(0));
         String keywords = "";
         int i;
-        for(i = 1; i < ctx.getChildCount() && ctx.getChild(i) instanceof TerminalNode; i++) {
+        for (i = 1; i < ctx.getChildCount() && ctx.getChild(i) instanceof TerminalNode; i++) {
             keywords += ctx.getChild(i).getText();
         }
-        if(keywords.equals("")==false) {
-            keywords+=" ";
+        if (keywords.equals("") == false) {
+            keywords += " ";
         }
         String identifier = visit(ctx.identifier());
-        if(ctx.getChild(i+1).getText().equals("=")) {
-            return typeName+" "+ keywords+ identifier+ " = " +visit(ctx.expression())+";\n";
-        }
-        else {
-            return typeName+" "+ keywords+ identifier+ ";";
+        if (ctx.getChild(i + 1).getText().equals("=")) {
+            return typeName + " " + keywords + identifier + " = " + visit(ctx.expression()) + ";\n";
+        } else {
+            return typeName + " " + keywords + identifier + ";";
         }
     }
 
     @Override
     public String visitUsingForDeclaration(SolidityParser.UsingForDeclarationContext ctx) {
-        if(ctx.getChild(3).toString().equals("*")) {
-            return "using " +visit(ctx.identifier())+" for *;";
-        }
-        else {
-            return "using " +visit(ctx.identifier())+" for " + visit(ctx.getChild(3))+";";
+        if (ctx.getChild(3).toString().equals("*")) {
+            return "using " + visit(ctx.identifier()) + " for *;";
+        } else {
+            return "using " + visit(ctx.identifier()) + " for " + visit(ctx.getChild(3)) + ";";
         }
     }
 
     @Override
     public String visitStructDefinition(SolidityParser.StructDefinitionContext ctx) {
-        if(ctx.getChildCount() == 4) {
-            return "struct "+ visit(ctx.identifier())+" {}";
-        }
-        else {
-            return "struct "+ visit(ctx.identifier())+" {\n"+//visit(ctx.variableDeclaration(0))+";\n"+
+        if (ctx.getChildCount() == 4) {
+            return "struct " + visit(ctx.identifier()) + " {}";
+        } else {
+            return "struct " + visit(ctx.identifier()) + " {\n" +//visit(ctx.variableDeclaration(0))+";\n"+
                     ctx.variableDeclaration().stream()
-                            .map(t -> visit(t)+";\n" )
+                            .map(t -> visit(t) + ";\n")
 //					  .skip(1)
-                            .reduce("", (acc, variableDeclaration) -> variableDeclaration)+"}";
+                            .reduce("", (acc, variableDeclaration) -> variableDeclaration) + "}";
         }
     }
 
     @Override
     public String visitModifierDefinition(SolidityParser.ModifierDefinitionContext ctx) {
-        if(ctx.getChildCount() == 3) {
-            return "modifier "+visit(ctx.identifier())+visit(ctx.block());
-        }
-        else {
-            return "modifier "+visit(ctx.identifier())+visit(ctx.parameterList())+visit(ctx.block());
+        if (ctx.getChildCount() == 3) {
+            return "modifier " + visit(ctx.identifier()) + visit(ctx.block());
+        } else {
+            return "modifier " + visit(ctx.identifier()) + visit(ctx.parameterList()) + visit(ctx.block());
         }
     }
 
     @Override
     public String visitModifierInvocation(SolidityParser.ModifierInvocationContext ctx) {
-        if(ctx.getChildCount() == 1) {
+        if (ctx.getChildCount() == 1) {
             return visit(ctx.identifier());
-        }
-        else {
-            return visit(ctx.identifier())+"( "+ visit(ctx.expressionList())+" )";
+        } else {
+            return visit(ctx.identifier()) + "( " + visit(ctx.expressionList()) + " )";
         }
     }
 
     @Override
     public String visitFunctionDefinition(SolidityParser.FunctionDefinitionContext ctx) {
-        if(ctx.getChildCount() == 4) { //Fallback함수임
-            return "function "+ visit(ctx.parameterList())+ visit(ctx.modifierList())+visit(ctx.getChild(3));
-        }
-        else if(ctx.getChildCount() == 5) {
-            if(ctx.getChild(1).equals(ctx.identifier())) {
+        if (ctx.getChildCount() == 4) { //Fallback함수임
+            return "function " + visit(ctx.parameterList()) + visit(ctx.modifierList()) + visit(ctx.getChild(3));
+        } else if (ctx.getChildCount() == 5) {
+            if (ctx.getChild(1).equals(ctx.identifier())) {
                 visit(ctx.getChild(4));
-                return "function "+ visit(ctx.identifier())+visit(ctx.parameterList())+ visit(ctx.modifierList())+visit(ctx.getChild(4));
+                return "function " + visit(ctx.identifier()) + visit(ctx.parameterList()) + visit(ctx.modifierList()) + visit(ctx.getChild(4));
 
+            } else {
+                return "function " + visit(ctx.parameterList()) + visit(ctx.modifierList()) + " " + visit(ctx.returnParameters()) + visit(ctx.getChild(4));
             }
-            else {
-                return "function "+visit(ctx.parameterList())+visit(ctx.modifierList())+" "+visit(ctx.returnParameters())+visit(ctx.getChild(4));
-            }
-        }
-        else {
-            return "function "+ visit(ctx.identifier())+visit(ctx.parameterList())+ visit(ctx.modifierList())+visit(ctx.returnParameters())+visit(ctx.getChild(5));
+        } else {
+            return "function " + visit(ctx.identifier()) + visit(ctx.parameterList()) + visit(ctx.modifierList()) + visit(ctx.returnParameters()) + visit(ctx.getChild(5));
         }
     }
 
     @Override
     public String visitReturnParameters(SolidityParser.ReturnParametersContext ctx) {
-        return "returns "+visit(ctx.parameterList());
+        return "returns " + visit(ctx.parameterList());
     }
 
     @Override
     public String visitModifierList(SolidityParser.ModifierListContext ctx) {
         String result = "";
-        for(int i= 0; i < ctx.getChildCount(); i++) {
-            if(ctx.getChild(i) instanceof TerminalNode) {
-                result +=ctx.getChild(i).getText()+" ";
-            }
-            else {
-                result +=visit(ctx.getChild(i))+" ";
+        for (int i = 0; i < ctx.getChildCount(); i++) {
+            if (ctx.getChild(i) instanceof TerminalNode) {
+                result += ctx.getChild(i).getText() + " ";
+            } else {
+                result += visit(ctx.getChild(i)) + " ";
             }
         }
         return result;
@@ -272,11 +257,10 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitEventDefinition(SolidityParser.EventDefinitionContext ctx) {
-        if(ctx.getChildCount() ==4) {
-            return "event "+visit(ctx.identifier())+visit(ctx.indexedParameterList())+";";
-        }
-        else {
-            return "event "+visit(ctx.identifier())+visit(ctx.indexedParameterList())+visit(ctx.AnonymousKeyword())+";";
+        if (ctx.getChildCount() == 4) {
+            return "event " + visit(ctx.identifier()) + visit(ctx.indexedParameterList()) + ";";
+        } else {
+            return "event " + visit(ctx.identifier()) + visit(ctx.indexedParameterList()) + visit(ctx.AnonymousKeyword()) + ";";
         }
     }
 
@@ -287,41 +271,39 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitEnumDefinition(SolidityParser.EnumDefinitionContext ctx) {
-        if(ctx.getChildCount() ==4) {
-            return "enum "+ visit(ctx.identifier())+"{ }";
-        }
-        else {
-            String resultEnum ="enum "+ visit(ctx.identifier())+"{";
+        if (ctx.getChildCount() == 4) {
+            return "enum " + visit(ctx.identifier()) + "{ }";
+        } else {
+            String resultEnum = "enum " + visit(ctx.identifier()) + "{";
             resultEnum += ctx.enumValue().stream()
-                    .map(t ->  ", " + visit(t) )
+                    .map(t -> ", " + visit(t))
                     .skip(1)
-                    .reduce(visit(ctx.enumValue(0)), (acc, enumValue) -> acc + enumValue)+" )";
+                    .reduce(visit(ctx.enumValue(0)), (acc, enumValue) -> acc + enumValue) + " )";
             return resultEnum;
         }
     }
 
     @Override
     public String visitIndexedParameterList(SolidityParser.IndexedParameterListContext ctx) {
-        return "("+ ctx.indexedParameter().stream()
-                .map(t ->  ", " + visit(t) )
+        return "(" + ctx.indexedParameter().stream()
+                .map(t -> ", " + visit(t))
                 .skip(1)
-                .reduce(visit(ctx.indexedParameter(0)), (acc, indexedParameter) -> acc + indexedParameter)+" )";
+                .reduce(visit(ctx.indexedParameter(0)), (acc, indexedParameter) -> acc + indexedParameter) + " )";
     }
 
     @Override
     public String visitIndexedParameter(SolidityParser.IndexedParameterContext ctx) {
-        String result = visit(ctx.typeName())+" ";
-        if(ctx.getChildCount() > 1) {
-            for(int i = 1; i < ctx.getChildCount(); i++) {
-                if(ctx.getChild(i) instanceof SolidityParser.IdentifierContext) {
-                    result += visit(ctx.identifier())+" ";
-                }
-                else {
-                    if(ctx.getChild(i) instanceof SolidityParser.StorageLocationContext) {
-                        result += visit(ctx.getChild(i))+" ";
+        String result = visit(ctx.typeName()) + " ";
+        if (ctx.getChildCount() > 1) {
+            for (int i = 1; i < ctx.getChildCount(); i++) {
+                if (ctx.getChild(i) instanceof SolidityParser.IdentifierContext) {
+                    result += visit(ctx.identifier()) + " ";
+                } else {
+                    if (ctx.getChild(i) instanceof SolidityParser.StorageLocationContext) {
+                        result += visit(ctx.getChild(i)) + " ";
                     }
-                    if(ctx.getChild(i) instanceof TerminalNode) {
-                        result += ctx.getChild(i).getText()+" ";
+                    if (ctx.getChild(i) instanceof TerminalNode) {
+                        result += ctx.getChild(i).getText() + " ";
                     }
                 }
             }
@@ -333,65 +315,60 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
     public String visitParameterList(SolidityParser.ParameterListContext ctx) {
         if (ctx.getChildCount() == 2) {
             return "()";
-        }
-        else {
-            return "( "+ctx.parameter().stream()
-                    .map(t ->  ", " + visit(t) )
+        } else {
+            return "( " + ctx.parameter().stream()
+                    .map(t -> ", " + visit(t))
                     .skip(1)
-                    .reduce(visit(ctx.parameter(0)), (acc, parameter) -> acc + parameter)+" )";
+                    .reduce(visit(ctx.parameter(0)), (acc, parameter) -> acc + parameter) + " )";
         }
     }
 
     @Override
     public String visitParameter(SolidityParser.ParameterContext ctx) {
-        if(ctx.getChildCount() == 1) {
+        if (ctx.getChildCount() == 1) {
             return visit(ctx.typeName());
-        }else if(ctx.getChildCount() == 2) {
-            return visit(ctx.typeName())+" "+visit(ctx.getChild(1));
-        }else {
-            return visit(ctx.typeName())+" " + visit(ctx.storageLocation())+ " "+visit(ctx.identifier());
+        } else if (ctx.getChildCount() == 2) {
+            return visit(ctx.typeName()) + " " + visit(ctx.getChild(1));
+        } else {
+            return visit(ctx.typeName()) + " " + visit(ctx.storageLocation()) + " " + visit(ctx.identifier());
         }
     }
 
     @Override
     public String visitTypeNameList(SolidityParser.TypeNameListContext ctx) {
-        return "( "+ctx.unnamedParameter().stream()
-                .map(t ->  ", " + visit(t) )
+        return "( " + ctx.unnamedParameter().stream()
+                .map(t -> ", " + visit(t))
                 .skip(1)
-                .reduce(visit(ctx.unnamedParameter(0)), (acc, unnamedParameter) -> acc + unnamedParameter)+" )";
+                .reduce(visit(ctx.unnamedParameter(0)), (acc, unnamedParameter) -> acc + unnamedParameter) + " )";
     }
 
     @Override
     public String visitUnnamedParameter(SolidityParser.UnnamedParameterContext ctx) {
-        if(ctx.getChildCount() == 1) {
+        if (ctx.getChildCount() == 1) {
             return visit(ctx.typeName());
-        }
-        else {
-            return visit(ctx.typeName())+" "+visit(ctx.storageLocation());
+        } else {
+            return visit(ctx.typeName()) + " " + visit(ctx.storageLocation());
         }
     }
 
     @Override
     public String visitVariableDeclaration(SolidityParser.VariableDeclarationContext ctx) {
         if (ctx.getChildCount() == 2) {
-            return visit(ctx.typeName())+" "+visit(ctx.identifier());
-        }
-        else {
-            return visit(ctx.typeName())+" "+visit(ctx.storageLocation())+" "+visit(ctx.identifier());
+            return visit(ctx.typeName()) + " " + visit(ctx.identifier());
+        } else {
+            return visit(ctx.typeName()) + " " + visit(ctx.storageLocation()) + " " + visit(ctx.identifier());
         }
     }
 
     @Override
     public String visitTypeName(SolidityParser.TypeNameContext ctx) {
-        if(ctx.getChildCount() == 1) {
+        if (ctx.getChildCount() == 1) {
             return visit(ctx.getChild(0));
-        }
-        else {
-            if(ctx.getChildCount() == 3) {
-                return visit(ctx.typeName())+"[]";
-            }
-            else {
-                return visit(ctx.typeName())+"["+visit(ctx.expression())+"]";
+        } else {
+            if (ctx.getChildCount() == 3) {
+                return visit(ctx.typeName()) + "[]";
+            } else {
+                return visit(ctx.typeName()) + "[" + visit(ctx.expression()) + "]";
             }
         }
     }
@@ -399,31 +376,29 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
     @Override
     public String visitUserDefinedTypeName(SolidityParser.UserDefinedTypeNameContext ctx) {
         return ctx.identifier().stream()
-                .map(t ->  "." + visit(t) )
+                .map(t -> "." + visit(t))
                 .skip(1)
                 .reduce(visit(ctx.identifier(0)), (acc, identifier) -> acc + identifier);
     }
 
     @Override
     public String visitMapping(SolidityParser.MappingContext ctx) {
-        return "mapping (" + visit(ctx.elementaryTypeName())+" => "+visit(ctx.typeName())+" )" ;
+        return "mapping (" + visit(ctx.elementaryTypeName()) + " => " + visit(ctx.typeName()) + " )";
     }
 
     @Override
     public String visitFunctionTypeName(SolidityParser.FunctionTypeNameContext ctx) {
-        String result = "function "+visit(ctx.typeNameList(0));
+        String result = "function " + visit(ctx.typeNameList(0));
 
-        for(int i = 0; i < ctx.getChildCount(); i++) {
-            if(ctx.getChild(i).toString().contains("returns")) {
+        for (int i = 0; i < ctx.getChildCount(); i++) {
+            if (ctx.getChild(i).toString().contains("returns")) {
                 result += visit(ctx.typeNameList(1));
                 return result;
-            }
-            else {
-                if(ctx.getChild(i) instanceof TerminalNode) {
-                    result += ctx.getChild(i).getText()+" ";
-                }
-                else {
-                    result += visit(ctx.getChild(i))+" ";
+            } else {
+                if (ctx.getChild(i) instanceof TerminalNode) {
+                    result += ctx.getChild(i).getText() + " ";
+                } else {
+                    result += visit(ctx.getChild(i)) + " ";
                 }
             }
         }
@@ -442,9 +417,9 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitBlock(SolidityParser.BlockContext ctx) {
-        return "{\n"+ctx.statement().stream()
-                .map(t ->  visit(t) )
-                .reduce("", (acc, statement) -> acc + statement)+"\n}";
+        return "{\n" + ctx.statement().stream()
+                .map(t -> visit(t))
+                .reduce("", (acc, statement) -> acc + statement) + "\n}";
     }
 
     @Override
@@ -454,61 +429,56 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitExpressionStatement(SolidityParser.ExpressionStatementContext ctx) {
-        return visit(ctx.expression())+";\n";
+        return visit(ctx.expression()) + ";\n";
     }
 
     @Override
     public String visitIfStatement(SolidityParser.IfStatementContext ctx) {
-        if(ctx.getChildCount() < 6) {
-            return "if ("+ visit(ctx.expression())+")"+visit(ctx.statement(0));
-        }
-        else {
-            return "if ("+ visit(ctx.expression())+") "+visit(ctx.statement(0))+"else "+visit(ctx.statement(1));
+        if (ctx.getChildCount() < 6) {
+            return "if (" + visit(ctx.expression()) + ")" + visit(ctx.statement(0));
+        } else {
+            return "if (" + visit(ctx.expression()) + ") " + visit(ctx.statement(0)) + "else " + visit(ctx.statement(1));
         }
     }
 
     @Override
     public String visitWhileStatement(SolidityParser.WhileStatementContext ctx) {
-        return "while( "+ visit(ctx.expression())+" )"+visit(ctx.statement());
+        return "while( " + visit(ctx.expression()) + " )" + visit(ctx.statement());
     }
 
     @Override
     public String visitSimpleStatement(SolidityParser.SimpleStatementContext ctx) {
-        return visitChildren(ctx)+"\n";
+        return visitChildren(ctx) + "\n";
     }
 
     @Override
     public String visitForStatement(SolidityParser.ForStatementContext ctx) {
-        if(ctx.getChildCount() == 6) {	//expression이 둘다 없을때
-            return "for (" + visit(ctx.getChild(2))+"; )"+ visit(ctx.statement());
-        }
-        else if(ctx.getChildCount() == 7) {  //expression이 둘중 하나만 있을때
-            if(ctx.getChild(4).toString().equals(";")) {
-                return "for (" + visit(ctx.getChild(2))+"; "+visit(ctx.expression(0))+" ) "+ visit(ctx.statement());
-            }
-            else {
-                return "for (" + visit(ctx.getChild(2)) + visit(ctx.expression(0))+"; "+") "+ visit(ctx.statement());
+        if (ctx.getChildCount() == 6) {    //expression이 둘다 없을때
+            return "for (" + visit(ctx.getChild(2)) + "; )" + visit(ctx.statement());
+        } else if (ctx.getChildCount() == 7) {  //expression이 둘중 하나만 있을때
+            if (ctx.getChild(4).toString().equals(";")) {
+                return "for (" + visit(ctx.getChild(2)) + "; " + visit(ctx.expression(0)) + " ) " + visit(ctx.statement());
+            } else {
+                return "for (" + visit(ctx.getChild(2)) + visit(ctx.expression(0)) + "; " + ") " + visit(ctx.statement());
             }
 
-        }
-        else {	//expression이 둘다 있을때
-            return "for (" + visit(ctx.getChild(2)) + visit(ctx.expression(0))+"; " + visit(ctx.expression(1))+")"+ visit(ctx.statement());
+        } else {    //expression이 둘다 있을때
+            return "for (" + visit(ctx.getChild(2)) + visit(ctx.expression(0)) + "; " + visit(ctx.expression(1)) + ")" + visit(ctx.statement());
         }
     }
 
     @Override
     public String visitInlineAssemblyStatement(SolidityParser.InlineAssemblyStatementContext ctx) {
-        if(ctx.getChildCount() == 2) {
-            return "assembly "+visit(ctx.assemblyBlock());
-        }
-        else{
-            return "assembly "+ctx.StringLiteral().getText() + visit(ctx.assemblyBlock());
+        if (ctx.getChildCount() == 2) {
+            return "assembly " + visit(ctx.assemblyBlock());
+        } else {
+            return "assembly " + ctx.StringLiteral().getText() + visit(ctx.assemblyBlock());
         }
     }
 
     @Override
     public String visitDoWhileStatement(SolidityParser.DoWhileStatementContext ctx) {
-        return "do "+ visit(ctx.statement())+"while ( "+visit(ctx.expression())+");";
+        return "do " + visit(ctx.statement()) + "while ( " + visit(ctx.expression()) + ");";
     }
 
     @Override
@@ -523,11 +493,10 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitReturnStatement(SolidityParser.ReturnStatementContext ctx) {
-        if(ctx.getChildCount() == 2) {
+        if (ctx.getChildCount() == 2) {
             return "return;";
-        }
-        else {
-            return "return "+visit(ctx.expression())+";";
+        } else {
+            return "return " + visit(ctx.expression()) + ";";
         }
     }
 
@@ -539,97 +508,82 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
     @Override
     public String visitVariableDeclarationStatement(SolidityParser.VariableDeclarationStatementContext ctx) {
         String firstChild = null;
-        if(ctx.getChild(0).toString().equals("var")) {
-            firstChild = "var "+ visit(ctx.identifierList());
-        }
-        else {
+        if (ctx.getChild(0).toString().equals("var")) {
+            firstChild = "var " + visit(ctx.identifierList());
+        } else {
             firstChild = visit(ctx.variableDeclaration());
         }
-        if(ctx.getChildCount() > 3) {
-            return firstChild +" = "+visit(ctx.expression())+ ";";
-        }
-        else {
+        if (ctx.getChildCount() > 3) {
+            return firstChild + " = " + visit(ctx.expression()) + ";";
+        } else {
             return firstChild + ";";
         }
     }
 
     @Override
     public String visitIdentifierList(SolidityParser.IdentifierListContext ctx) {
-        if(ctx.getChildCount() == 2) {
+        if (ctx.getChildCount() == 2) {
             return "( )";
-        }
-        else {
+        } else {
             return "(" + ctx.identifier().stream()
-                    .map(t ->  visit(t)+", " )
-                    .reduce("", (acc, identifier) -> acc + identifier) +" )";
+                    .map(t -> visit(t) + ", ")
+                    .reduce("", (acc, identifier) -> acc + identifier) + " )";
         }
     }
 
     @Override
     public String visitElementaryTypeName(SolidityParser.ElementaryTypeNameContext ctx) {
-        if(ctx.getChild(0) instanceof TerminalNode) {
+        if (ctx.getChild(0) instanceof TerminalNode) {
             return ctx.getChild(0).getText();
-        }
-        else {
+        } else {
             return ctx.getText();
         }
     }
 
     @Override
     public String visitExpression(SolidityParser.ExpressionContext ctx) {
-        if(ctx.expression().size() == 2) {
-            if(ctx.getChild(1).toString().equals("[")) { //expression[expression]
-                return visit(ctx.expression(0)) + "[ "+ visit(ctx.expression(1))+ " ]";
+        if (ctx.expression().size() == 2) {
+            if (ctx.getChild(1).toString().equals("[")) { //expression[expression]
+                return visit(ctx.expression(0)) + "[ " + visit(ctx.expression(1)) + " ]";
+            } else {  //expression 연산자 expression
+                return visit(ctx.expression(0)) + " " + ctx.getChild(1).getText() + " " + visit(ctx.expression(1));
             }
-            else {  //expression 연산자 expression
-                return visit(ctx.expression(0)) +" "+ ctx.getChild(1).getText()+" "+ visit(ctx.expression(1));
-            }
-        }
-        else if (ctx.expression().size() == 1) {
-            if(ctx.getChild(0).equals(ctx.fallbackExpression()) || ctx.getChild(0).equals(ctx.forInitExpreesion())){
+        } else if (ctx.expression().size() == 1) {
+            if (ctx.getChild(0).equals(ctx.fallbackExpression()) || ctx.getChild(0).equals(ctx.forInitExpreesion())) {
                 return ctx.getChild(0).getText();
-            }
-            else if(ctx.getChild(0) instanceof SolidityParser.ExpressionContext) { //expression ++|-- expression (fucn)
-                if(ctx.getChild(1).toString().equals("(")) { //expression( functionCallArguments)
+            } else if (ctx.getChild(0) instanceof SolidityParser.ExpressionContext) { //expression ++|-- expression (fucn)
+                if (ctx.getChild(1).toString().equals("(")) { //expression( functionCallArguments)
                     String result = "";
                     result = visit(ctx.functionCallArguments());
-                    return visit(ctx.expression(0)) + "( "+ visit(ctx.functionCallArguments())+ " )";
+                    return visit(ctx.expression(0)) + "( " + visit(ctx.functionCallArguments()) + " )";
+                } else if (ctx.getChild(1).toString().equals(".")) { //expression . identifier
+                    return visit(ctx.expression(0)) + "." + visit(ctx.identifier());
+                } else { //expression ++|--
+                    return visit(ctx.expression(0)) + ctx.getChild(1).getText();
                 }
-                else if(ctx.getChild(1).toString().equals(".")) { //expression . identifier
-                    return visit(ctx.expression(0))+"."+visit(ctx.identifier());
-                }
-                else { //expression ++|--
-                    return visit(ctx.expression(0))+ctx.getChild(1).getText();
-                }
-            }
-            else { //1번째가 expression 이 아닌경우
-                if(ctx.getChild(0).toString().equals("(")) {//(expression)
-                    return "( "+visit(ctx.expression(0)) +" )";
-                }
-                else {//++expression 등
-                    return ctx.getChild(0).getText()+" "+visit(ctx.expression(0));
+            } else { //1번째가 expression 이 아닌경우
+                if (ctx.getChild(0).toString().equals("(")) {//(expression)
+                    return "( " + visit(ctx.expression(0)) + " )";
+                } else {//++expression 등
+                    return ctx.getChild(0).getText() + " " + visit(ctx.expression(0));
                 }
             }
-        }
-        else {  //삼항연산자 또는 new 또는 primaryExpression
-            if(ctx.expression().size() == 3) {
-                return visit(ctx.expression(0)) + " ? "+visit(ctx.expression(1)) + " : "+ visit(ctx.expression(2));
-            }
-            else if(ctx.getChild(0) instanceof SolidityParser.PrimaryExpressionContext) {
+        } else {  //삼항연산자 또는 new 또는 primaryExpression
+            if (ctx.expression().size() == 3) {
+                return visit(ctx.expression(0)) + " ? " + visit(ctx.expression(1)) + " : " + visit(ctx.expression(2));
+            } else if (ctx.getChild(0) instanceof SolidityParser.PrimaryExpressionContext) {
                 return visit(ctx.primaryExpression());
-            }
-            else { //new typename
-                return "new "+ visit(ctx.typeName());
+            } else { //new typename
+                return "new " + visit(ctx.typeName());
             }
         }
     }
 
     @Override
     public String visitPrimaryExpression(SolidityParser.PrimaryExpressionContext ctx) {
-        if(ctx.getChild(0) instanceof TerminalNode) {
+        if (ctx.getChild(0) instanceof TerminalNode) {
             return ctx.getChild(0).getText();
-        }
-        else {
+        } else {
             return visit(ctx.getChild(0));
         }
     }
@@ -637,19 +591,18 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
     @Override
     public String visitExpressionList(SolidityParser.ExpressionListContext ctx) {
         return ctx.expression().stream()
-                .map(t ->  ", " + visit(t) )
+                .map(t -> ", " + visit(t))
                 .skip(1)
                 .reduce(visit(ctx.expression(0)), (acc, expression) -> acc + expression);
     }
 
     @Override
     public String visitNameValueList(SolidityParser.NameValueListContext ctx) {
-        int lastitemIndex = ctx.getChildCount()-1;
-        if(ctx.getChild(lastitemIndex).toString().equals(",")) {
+        int lastitemIndex = ctx.getChildCount() - 1;
+        if (ctx.getChild(lastitemIndex).toString().equals(",")) {
             return ctx.nameValue().stream().map(t -> ", " + visit(t)).skip(1).reduce(visit(ctx.nameValue(0)),
                     (acc, nameValue) -> acc + nameValue) + ",";
-        }
-        else {
+        } else {
             return ctx.nameValue().stream().map(t -> ", " + visit(t)).skip(1).reduce(visit(ctx.nameValue(0)),
                     (acc, nameValue) -> acc + nameValue);
         }
@@ -657,24 +610,21 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitNameValue(SolidityParser.NameValueContext ctx) {
-        return visit(ctx.identifier())+" : "+visit(ctx.expression());
+        return visit(ctx.identifier()) + " : " + visit(ctx.expression());
     }
 
     @Override
     public String visitFunctionCallArguments(SolidityParser.FunctionCallArgumentsContext ctx) {
-        if(ctx.getChildCount()>=2) {
-            if(ctx.nameValueList()!=null) {
-                return "{" + visit(ctx.nameValueList())+"}";
-            }
-            else {
+        if (ctx.getChildCount() >= 2) {
+            if (ctx.nameValueList() != null) {
+                return "{" + visit(ctx.nameValueList()) + "}";
+            } else {
                 return "{ }";
             }
-        }
-        else {
-            if(ctx.expressionList()!= null) {
+        } else {
+            if (ctx.expressionList() != null) {
                 return visit(ctx.expressionList());
-            }
-            else {
+            } else {
                 return "";
             }
         }
@@ -682,15 +632,15 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitAssemblyBlock(SolidityParser.AssemblyBlockContext ctx) {
-        return "{\n " +ctx.assemblyItem().stream()
-                .map(t ->  visit(t)+"\n" )
-                .reduce("", (acc, assemblyItem) -> acc + assemblyItem) +" \n}";
+        return "{\n " + ctx.assemblyItem().stream()
+                .map(t -> visit(t) + "\n")
+                .reduce("", (acc, assemblyItem) -> acc + assemblyItem) + " \n}";
     }
 
     @Override
     public String visitAssemblyItem(SolidityParser.AssemblyItemContext ctx) {
-        String result ="";
-        for(int i = 0; i < ctx.getChildCount(); i++) {
+        String result = "";
+        for (int i = 0; i < ctx.getChildCount(); i++) {
             if (ctx.getChild(i) instanceof TerminalNode) {
                 result += ctx.getText(); ////////////////////////// 오류가능성있음/////////////////////////////
             } else {
@@ -711,13 +661,11 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
         if (ctx.getChildCount() == 1) {
             if (ctx.getChild(0) instanceof SolidityParser.IdentifierContext) {
                 firstChild = visit(ctx.identifier());
-            }
-            else {
+            } else {
                 firstChild = ctx.getChild(0).getText();
             }
             return firstChild;
-        }
-        else {
+        } else {
             return firstChild + "( "
                     + ctx.assemblyExpression().stream()
                     .map(t -> ", " + visit(t))
@@ -729,98 +677,91 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitAssemblyLocalDefinition(SolidityParser.AssemblyLocalDefinitionContext ctx) {
-        if(ctx.getChildCount()==2) {
-            return "let"+visit(ctx.assemblyIdentifierOrList());
-        }
-        else {
-            return "let "+visit(ctx.assemblyIdentifierOrList())+" := "+visit(ctx.assemblyExpression());
+        if (ctx.getChildCount() == 2) {
+            return "let" + visit(ctx.assemblyIdentifierOrList());
+        } else {
+            return "let " + visit(ctx.assemblyIdentifierOrList()) + " := " + visit(ctx.assemblyExpression());
         }
     }
 
     @Override
     public String visitAssemblyAssignment(SolidityParser.AssemblyAssignmentContext ctx) {
-        return visit(ctx.assemblyIdentifierOrList())+" := "+visit(ctx.assemblyExpression());
+        return visit(ctx.assemblyIdentifierOrList()) + " := " + visit(ctx.assemblyExpression());
     }
 
     @Override
     public String visitAssemblyIdentifierOrList(SolidityParser.AssemblyIdentifierOrListContext ctx) {
-        if(ctx.getChildCount()==1) {
+        if (ctx.getChildCount() == 1) {
             return visit(ctx.identifier());
-        }
-        else {
-            return "( "+visit(ctx.assemblyIdentifierList())+" )";
+        } else {
+            return "( " + visit(ctx.assemblyIdentifierList()) + " )";
         }
     }
 
     @Override
     public String visitAssemblyIdentifierList(SolidityParser.AssemblyIdentifierListContext ctx) {
         return ctx.identifier().stream()
-                .map(t ->  ", " + visit(t) )
+                .map(t -> ", " + visit(t))
                 .skip(1)
                 .reduce(visit(ctx.identifier(0)), (acc, identifier) -> acc + identifier);
     }
 
     @Override
     public String visitAssemblyStackAssignment(SolidityParser.AssemblyStackAssignmentContext ctx) {
-        return " =: "+visitChildren(ctx);
+        return " =: " + visitChildren(ctx);
     }
 
     @Override
     public String visitLabelDefinition(SolidityParser.LabelDefinitionContext ctx) {
-        return visit(ctx.identifier())+":";
+        return visit(ctx.identifier()) + ":";
     }
 
     @Override
     public String visitAssemblySwitch(SolidityParser.AssemblySwitchContext ctx) {
         String assem = null;
-        if(ctx.assemblyCase() == null) {
-            return "switch "+visit(ctx.assemblyExpression());
-        }
-        else {
-            for(int i = 0; i< ctx.assemblyCase().size(); i++) {
+        if (ctx.assemblyCase() == null) {
+            return "switch " + visit(ctx.assemblyExpression());
+        } else {
+            for (int i = 0; i < ctx.assemblyCase().size(); i++) {
                 assem += visit(ctx.assemblyCase(i));
             }
-            return "switch "+visit(ctx.assemblyExpression())+ assem;
+            return "switch " + visit(ctx.assemblyExpression()) + assem;
         }
     }
 
     @Override
     public String visitAssemblyCase(SolidityParser.AssemblyCaseContext ctx) {
-        if(ctx.getChild(0).toString().equals("case")) {
-            return "case "+ visit(ctx.assemblyLiteral())+ visit(ctx.assemblyBlock());
-        }
-        else {
-            return "default "+visit(ctx.assemblyBlock());
+        if (ctx.getChild(0).toString().equals("case")) {
+            return "case " + visit(ctx.assemblyLiteral()) + visit(ctx.assemblyBlock());
+        } else {
+            return "default " + visit(ctx.assemblyBlock());
         }
     }
 
     @Override
     public String visitAssemblyFunctionDefinition(SolidityParser.AssemblyFunctionDefinitionContext ctx) {
-        if(ctx.getChildCount() == 5) {
-            return "function "+ visit(ctx.identifier())+" ( ) "+visit(ctx.assemblyBlock());
-        }
-        else if(ctx.getChildCount() == 6) {
-            if(ctx.getChild(3).equals(ctx.assemblyIdentifierList())) {
-                return "function "+ visit(ctx.identifier())+" ( "+visit(ctx.assemblyIdentifierList())+" ) "+visit(ctx.assemblyBlock());
+        if (ctx.getChildCount() == 5) {
+            return "function " + visit(ctx.identifier()) + " ( ) " + visit(ctx.assemblyBlock());
+        } else if (ctx.getChildCount() == 6) {
+            if (ctx.getChild(3).equals(ctx.assemblyIdentifierList())) {
+                return "function " + visit(ctx.identifier()) + " ( " + visit(ctx.assemblyIdentifierList()) + " ) " + visit(ctx.assemblyBlock());
+            } else {
+                return "function " + visit(ctx.identifier()) + " ( ) " + visit(ctx.assemblyFunctionReturns()) + visit(ctx.assemblyBlock());
             }
-            else {
-                return "function "+ visit(ctx.identifier())+" ( ) "+visit(ctx.assemblyFunctionReturns())+visit(ctx.assemblyBlock());
-            }
-        }
-        else {
-            return "function "+ visit(ctx.identifier())+" ( "+visit(ctx.assemblyIdentifierList())+" ) "+visit(ctx.assemblyFunctionReturns())+visit(ctx.assemblyBlock());
+        } else {
+            return "function " + visit(ctx.identifier()) + " ( " + visit(ctx.assemblyIdentifierList()) + " ) " + visit(ctx.assemblyFunctionReturns()) + visit(ctx.assemblyBlock());
         }
     }
 
     @Override
     public String visitAssemblyFunctionReturns(SolidityParser.AssemblyFunctionReturnsContext ctx) {
-        return "-> "+visit(ctx.assemblyIdentifierList());
+        return "-> " + visit(ctx.assemblyIdentifierList());
     }
 
     @Override
     public String visitAssemblyFor(SolidityParser.AssemblyForContext ctx) {
         String result = "for ";
-        for(int i = 1; i< ctx.getChildCount(); i++) {
+        for (int i = 1; i < ctx.getChildCount(); i++) {
             result += visit(ctx.getChild(i));
         }
         return result;
@@ -828,7 +769,7 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitAssemblyIf(SolidityParser.AssemblyIfContext ctx) {
-        return "if " + visit(ctx.assemblyExpression())+ visit(ctx.assemblyBlock());
+        return "if " + visit(ctx.assemblyExpression()) + visit(ctx.assemblyBlock());
     }
 
     @Override
@@ -838,23 +779,22 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitSubAssembly(SolidityParser.SubAssemblyContext ctx) {
-        return "assembly " + visit(ctx.identifier())+ visit(ctx.assemblyBlock());
+        return "assembly " + visit(ctx.identifier()) + visit(ctx.assemblyBlock());
     }
 
     @Override
     public String visitTupleExpression(SolidityParser.TupleExpressionContext ctx) {
-        if(ctx.getChild(0).getText().equals("(")) {
-            return "("+ctx.expression().stream()
-                    .map(t ->  ", " + visit(t) )
+        if (ctx.getChild(0).getText().equals("(")) {
+            return "(" + ctx.expression().stream()
+                    .map(t -> ", " + visit(t))
                     .skip(1)
-                    .reduce(visit(ctx.expression(0)), (acc, expression) -> acc + expression)+")";
-        }
-        else {
+                    .reduce(visit(ctx.expression(0)), (acc, expression) -> acc + expression) + ")";
+        } else {
 //			if(ctx.getChildCount() == )
-            return "["+ctx.expression().stream()
-                    .map(t ->  ", " + visit(t) )
+            return "[" + ctx.expression().stream()
+                    .map(t -> ", " + visit(t))
                     .skip(1)
-                    .reduce(visit(ctx.expression(0)), (acc, expression) -> acc + expression)+"]";
+                    .reduce(visit(ctx.expression(0)), (acc, expression) -> acc + expression) + "]";
         }
     }
 
@@ -865,24 +805,23 @@ public class SolidityPrintVisitor extends SolidityBaseVisitor<String> {
 
     @Override
     public String visitNumberLiteral(SolidityParser.NumberLiteralContext ctx) {
-        if(ctx.getChildCount() == 1) {
+        if (ctx.getChildCount() == 1) {
             return ctx.getChild(0).getText();
-        }
-        else {
-            return ctx.getChild(0).getText()+ ctx.NumberUnit().toString();
+        } else {
+            return ctx.getChild(0).getText() + ctx.NumberUnit().toString();
         }
     }
 
     @Override
     public String visitIdentifier(SolidityParser.IdentifierContext ctx) {
-        if(ctx.getChild(0).toString().equals("from")) {
+        if (ctx.getChild(0).toString().equals("from")) {
             return ctx.getChild(0).getText();
-        }
-        else {
+        } else {
             return ctx.Identifier().getText();
         }
     }
-    public ArrayList findInheritance(){
+
+    public ArrayList findInheritance() {
         return array;
     }
 }
